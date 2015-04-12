@@ -1,0 +1,29 @@
+<% content_for :title do %>Koodo Prepaid Dashboard<% end %>
+<div class="gridster">
+  <ul>
+    <li data-row="1" data-col="1" data-sizex="1" data-sizey="1">
+      <div data-id="cost_per_month" data-view="Number" data-title="Average Cost" data-prefix="$"></div>
+    </li>
+    <li data-row="1" data-col="1" data-sizex="1" data-sizey="1">
+      <div data-id="estimated_monthly_cost" data-view="Number" data-title="Estimated Cost" data-prefix=" $" data-absolutediff="true"></div>
+    </li>
+    <li data-row="1" data-col="1" data-sizex="1" data-sizey="1">
+      <div data-id="cost_breakdown" data-view="GooglePie" data-title="Cost Breakdown" data-legend_position="bottom"></div>
+    </li>
+    <li data-row="1" data-col="1" data-sizex="1" data-sizey="1">
+      <div data-id="account_balance" data-view="Number" data-title="Account Balance" data-prefix=" $" data-absolutediff="true"></div>
+    </li>
+    <li data-row="2" data-col="1" data-sizex="2" data-sizey="1">
+      <div data-id="data_usage" data-view="Graph" data-title="Data Used (last 30 days)" data-suffix=" MB"></div>
+    </li>
+    <li data-row="2" data-col="1" data-sizex="2" data-sizey="1">
+      <div data-id="talk_usage" data-view="Graph" data-title="Minutes Used (last 30 days)" data-suffix=" min"></div>
+    </li>
+    <li data-row="2" data-col="1" data-sizex="2" data-sizey="1">
+      <div data-id="data_remaining" data-view="Graph" data-title="Data Remaining" data-suffix=" MB"></div>
+    </li>
+    <li data-row="2" data-col="1" data-sizex="2" data-sizey="1">
+      <div data-id="talk_remaining" data-view="Graph" data-title="Minutes Remaining" data-suffix=" min"></div>
+    </li>
+  </ul>
+</div>

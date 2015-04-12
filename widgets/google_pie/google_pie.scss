@@ -1,0 +1,34 @@
+// ----------------------------------------------------------------------------
+// Sass declarations
+// ----------------------------------------------------------------------------
+$background-color: #47bbb3;
+$title-color: rgba(255, 255, 255, 0.7);
+
+// ----------------------------------------------------------------------------
+// Widget-GoogleGauge styles
+// ----------------------------------------------------------------------------
+.widget-google-pie {
+
+  background-color: $background-color;
+  position: relative;
+  color: white;
+
+  svg > g:nth-child(2) > g > g > text {
+    fill: white;
+  }
+
+  .title {
+    position: absolute;
+    top: 20px;
+    left: 0px;
+    right: 0px;
+    color: $title-color;
+  }
+
+  .chart {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+  }
+
+}
