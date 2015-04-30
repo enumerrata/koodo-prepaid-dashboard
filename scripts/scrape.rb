@@ -104,7 +104,8 @@ def scrape
   scraper = Scraper.new
 
   #   Fetch usage info re: booster usage.
-  UsageDataPoint.create(scraper.fetch_booster_usage)
+  usage = scraper.fetch_booster_usage
+  UsageDataPoint.create(usage) unless usage.values.all?(&:zero)
 
   #   Fetch latest transactions and put these in the DB,
   #   but only if we don't already have them.
