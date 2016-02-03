@@ -2,6 +2,7 @@
 
 require 'erb'
 require 'yaml'
+require 'highline'
 require 'mechanize'
 require 'active_record'
 require_relative '../models/usage_data_point'
@@ -18,6 +19,7 @@ class Scraper
   def initialize(username=ENV.fetch('KOODO_USERNAME', ARGV[1]), password=ENV.fetch('KOODO_PASSWORD', ARGV[2]))
     @username = username
     @password = password
+    @password = HighLine.new.ask("Enter your password:") { |q| q.echo = false } if @password.nil?
     @browser = Mechanize.new
     @logged_in = false
     login unless @username.nil? || @password.nil?
@@ -36,12 +38,13 @@ class Scraper
     form['ctl00$FullContent$ContentBottom$LoginControl$Password'] = @password
     form.click_button
 
-    raise 'LoginFailure' unless @browser.page.body.include?('Logged in as:')
+    raise 'LoginFailure' unless @browser.page.body.include?('Account Status Active')
     @logged_in = true
     self
   end
 
   def fetch_booster_usage
+    raise 'Not logged in' unless @logged_in
     booster_url = "products-and-services/view-bundle-usage/"
     @browser.get(ROOT_URL + booster_url)
 

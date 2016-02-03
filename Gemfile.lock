@@ -37,6 +37,7 @@ GEM
       unf (>= 0.0.5, < 1.0.0)
     eventmachine (1.0.7)
     execjs (2.0.2)
+    highline (1.7.8)
     hike (1.2.3)
     http-cookie (1.0.2)
       domain_name (~> 0.5)
@@ -106,5 +107,6 @@ DEPENDENCIES
   activerecord (~> 4.1)
   activesupport (~> 4.1)
   dashing
+  highline
   mechanize
   mysql2
