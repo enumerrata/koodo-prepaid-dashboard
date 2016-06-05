@@ -144,8 +144,8 @@ end
 
 if ARGV.include? '--daily'
   notify_daily
-elsif ARGV.include? '--weekly'
-  notify_weekly
+elsif ARGV.include?('--weekly') && ARGV.include?('--on-day') && Date::DAYNAMES.include?(ARGV.last.humanize)
+  notify_weekly if Date::DAYNAMES[Date.today.wday] == ARGV.last.humanize
 else
-  raise 'Please specify --daily or --weekly.'
+  raise 'Please specify --daily or (--weekly and --on-day <day name>).'
 end
