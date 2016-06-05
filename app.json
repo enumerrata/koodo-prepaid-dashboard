@@ -19,10 +19,20 @@
     "KOODO_PASSWORD": {
       "description": "Your plaintext password for logging into prepaidselfserve.koodomobile.com.",
       "required": true
+    },
+    "SMS_TARGET": {
+      "description": "Your SMS number for emergency notifications about usage.",
+      "required": false
+    },
+    "EMAIL_TARGET": {
+      "description": "Your email address for emergency notifications or daily summaries about usage.",
+      "required": false
     }
   },
   "addons": [
     "cleardb:ignite",
-    "scheduler:standard"
+    "scheduler:standard",
+    "easysms:test",
+    "sendgrid:starter"
   ]
 }

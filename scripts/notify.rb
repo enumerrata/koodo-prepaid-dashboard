@@ -1,19 +1,35 @@
 #!/usr/bin/env ruby
 
 require 'erb'
+require 'mail'
 require 'yaml'
 require 'easy-sms'
 require 'highline'
 require 'mechanize'
+require 'action_view'
 require 'active_record'
 require 'active_support/core_ext/numeric/time'
 require_relative '../models/usage_data_point'
 require_relative '../models/koodo_transaction'
 
+include ActionView::Helpers::DateHelper
+
 ENVIRONMENT = ENV['RACK_ENV'] || 'development'
 DBCONFIG = YAML.load(ERB.new(File.read(File.join('config', 'database.yml'))).result)
 
 ActiveRecord::Base.establish_connection(DBCONFIG[ENVIRONMENT])
+
+Mail.defaults do
+  delivery_method :smtp, {
+    :address => 'smtp.sendgrid.net',
+    :port => '587',
+    :domain => 'heroku.com',
+    :user_name => ENV['SENDGRID_USERNAME'],
+    :password => ENV['SENDGRID_PASSWORD'],
+    :authentication => :plain,
+    :enable_starttls_auto => true
+  }
+end
 
 DATA_BOOSTER_VALUES = [1024, 512, 256]
 DATA_BOOSTER_COSTS = [30, 20, 10]
@@ -25,6 +41,7 @@ APPROXIMATE_COST_PER_MINUTE = TALK_BOOSTER_COSTS.max.to_f / TALK_BOOSTER_VALUES.
 
 # Usage rate over time, in $/second.
 USUAL_USAGE_RATE = 30.0/30.days
+FROM_ADDRESS = 'koodo-prepaid-dashboard@petersobot.com'
 
 def calculate_metric_usage_ignoring_top_ups(a, b, top_up_values)
   delta = a - b
@@ -66,29 +83,62 @@ def calculate_usage_rate(minutes_used, mb_used, period)
 end
 
 def generate_subject_and_message(minutes_used, mb_used, period)
-  subject = "#{format('$%.2f', mb_used * APPROXIMATE_COST_PER_MB + minutes_used * APPROXIMATE_COST_PER_MINUTE)} used yesterday."
+  subject = "#{format('$%.2f', mb_used * APPROXIMATE_COST_PER_MB + minutes_used * APPROXIMATE_COST_PER_MINUTE)} used in the past #{distance_of_time_in_words(period)}."
 
   usage_parts = []
   usage_parts << "#{format('%.2f', mb_used)} mb (#{format('$%.2f', mb_used * APPROXIMATE_COST_PER_MB)})" if mb_used > 0
   usage_parts << "#{minutes_used.ceil} minutes (#{format('$%.2f', minutes_used * APPROXIMATE_COST_PER_MINUTE)})" if minutes_used > 0
   usage = usage_parts.empty? ? 'no data or minutes' : usage_parts.join(' and ')
 
-  message = "You've used #{usage} in the last 24 hours."
+  message = "You've used #{usage} in the last #{distance_of_time_in_words(period)}."
 
   [subject, message]
 end
 
-def notify
+def notify_daily
   period = 24.hours
   minutes_used, mb_used = calculate_approximate_usage(period)
   usage_rate = calculate_usage_rate(minutes_used, mb_used, period)
   subject, message = generate_subject_and_message(minutes_used, mb_used, period)
 
   sms_target = ENV['SMS_TARGET']
+  email_target = ENV['EMAIL_TARGET']
+
   if usage_rate > USUAL_USAGE_RATE && sms_target.present?
     client = EasySMS::Client.new
     client.messages.create to: sms_target, body: message
+  elsif email_target.present? && ENV['SENDGRID_USERNAME']
+    Mail.deliver do
+      to email_target
+      from FROM_ADDRESS
+      subject subject
+      body message
+    end
   end
 end
 
-notify
+def notify_weekly
+  period = 1.week
+  minutes_used, mb_used = calculate_approximate_usage(period)
+  usage_rate = calculate_usage_rate(minutes_used, mb_used, period)
+  subject, message = generate_subject_and_message(minutes_used, mb_used, period)
+
+  email_target = ENV['EMAIL_TARGET']
+
+  if email_target.present? && ENV['SENDGRID_USERNAME']
+    Mail.deliver do
+      to email_target
+      from FROM_ADDRESS
+      subject subject
+      body message
+    end
+  end
+end
+
+if ARGV.include? '--daily'
+  notify_daily
+elsif ARGV.include? '--weekly'
+  notify_weekly
+else
+  raise 'Please specify --daily or --weekly.'
+end
