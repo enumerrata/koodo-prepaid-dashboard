@@ -36,6 +36,11 @@ DATA_BOOSTER_COSTS = [30, 20, 10]
 TALK_BOOSTER_VALUES = [500, 200, 100]
 TALK_BOOSTER_COSTS = [25, 10, 5]
 
+# If numbers increase by any value less than this, don't assume a top-up happened.
+ALLOWABLE_INACCURACY_PERCENTAGE = 0.01
+ALLOWABLE_MB_INACCURACY = DATA_BOOSTER_VALUES.max.to_f * ALLOWABLE_INACCURACY_PERCENTAGE
+ALLOWABLE_MINUTE_INACCURACY = TALK_BOOSTER_VALUES.max.to_f * ALLOWABLE_INACCURACY_PERCENTAGE
+
 APPROXIMATE_COST_PER_MB = DATA_BOOSTER_COSTS.max.to_f / DATA_BOOSTER_VALUES.max.to_f
 APPROXIMATE_COST_PER_MINUTE = TALK_BOOSTER_COSTS.max.to_f / TALK_BOOSTER_VALUES.max.to_f
 
@@ -43,9 +48,9 @@ APPROXIMATE_COST_PER_MINUTE = TALK_BOOSTER_COSTS.max.to_f / TALK_BOOSTER_VALUES.
 USUAL_USAGE_RATE = 30.0/30.days
 FROM_ADDRESS = 'koodo-prepaid-dashboard@petersobot.com'
 
-def calculate_metric_usage_ignoring_top_ups(a, b, top_up_values)
+def calculate_metric_usage_ignoring_top_ups(a, b, top_up_values, inaccuracy=0)
   delta = a - b
-  if delta < 0
+  if delta < (-1 * inaccuracy)
     # we must have topped up, so round up to the nearest top-up value.
     top_up_value = top_up_values.find { |v| v > (-1 * delta) }
 
@@ -66,12 +71,14 @@ def calculate_approximate_usage(time_period=24.hours)
     minutes_used += calculate_metric_usage_ignoring_top_ups(
       a.minutes_remaining,
       b.minutes_remaining,
-      TALK_BOOSTER_VALUES
+      TALK_BOOSTER_VALUES,
+      ALLOWABLE_MINUTE_INACCURACY
     )
     mb_used += calculate_metric_usage_ignoring_top_ups(
       a.mb_remaining,
       b.mb_remaining,
-      DATA_BOOSTER_VALUES
+      DATA_BOOSTER_VALUES,
+      ALLOWABLE_MB_INACCURACY
     )
   end
 
