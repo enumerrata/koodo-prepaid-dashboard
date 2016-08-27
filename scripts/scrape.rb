@@ -76,7 +76,7 @@ class Scraper
 
     form.click_button(form.button_with(name: 'ctl00$ctl00$FullContent$DashboardContent$ViewTransactionHistoryButton'))
 
-    (@browser.page.search('tr.gvTransactionHistoryRow') + @browser.page.search('tr.gvTransactionHistoryAltRow')).map do |t|
+    (@browser.page.search('tr.gvTransactionHistoryRow1') + @browser.page.search('tr.gvTransactionHistoryAltRow1')).map do |t|
       _parse_transaction_history_row(t)
     end
   end
