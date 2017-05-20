@@ -1,9 +1,11 @@
 #!/usr/bin/env ruby
 
+require 'uri'
 require 'erb'
 require 'mail'
 require 'yaml'
-require 'easy-sms'
+require 'json'
+require 'net/http'
 require 'highline'
 require 'mechanize'
 require 'action_view'
@@ -102,6 +104,17 @@ def generate_subject_and_message(minutes_used, mb_used, period)
   [subject, message]
 end
 
+def send_sms(target, body)
+  data = JSON.generate({phone: [target], text: body})
+  header = {'Content-Type' => 'text/json'}
+
+  uri = URI.parse(ENV['TILL_URL'])
+  http = Net::HTTP.new(uri.host, uri.port)
+  request = Net::HTTP::Post.new(uri.request_uri, header)
+  request.body = data
+  http.request(request)
+end
+
 def notify_daily
   period = 24.hours
   minutes_used, mb_used = calculate_approximate_usage(period)
@@ -112,8 +125,7 @@ def notify_daily
   email_target = ENV['EMAIL_TARGET']
 
   if usage_rate > USUAL_USAGE_RATE && sms_target.present?
-    client = EasySMS::Client.new
-    client.messages.create to: sms_target, body: message
+    send_sms(sms_target, message)
   elsif email_target.present? && ENV['SENDGRID_USERNAME']
     Mail.deliver do
       to email_target
