@@ -110,6 +110,7 @@ def send_sms(target, body)
 
   uri = URI.parse(ENV['TILL_URL'])
   http = Net::HTTP.new(uri.host, uri.port)
+  http.use_ssl = true
   request = Net::HTTP::Post.new(uri.request_uri, header)
   request.body = data
   http.request(request)
