@@ -127,7 +127,7 @@ def notify_daily
 
   if usage_rate > USUAL_USAGE_RATE && sms_target.present?
     send_sms(sms_target, message)
-  elsif email_target.present? && ENV['SENDGRID_USERNAME']
+  elsif usage_rate > 0 && email_target.present? && ENV['SENDGRID_USERNAME']
     Mail.deliver do
       to email_target
       from FROM_ADDRESS
