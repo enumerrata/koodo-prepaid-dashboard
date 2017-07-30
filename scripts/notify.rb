@@ -145,7 +145,7 @@ def notify_weekly
 
   email_target = ENV['EMAIL_TARGET']
 
-  if email_target.present? && ENV['SENDGRID_USERNAME']
+  if usage_rate > 0 && email_target.present? && ENV['SENDGRID_USERNAME']
     Mail.deliver do
       to email_target
       from FROM_ADDRESS
